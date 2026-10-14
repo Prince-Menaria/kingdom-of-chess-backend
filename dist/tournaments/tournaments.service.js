@@ -102,6 +102,94 @@ let TournamentsService = class TournamentsService {
             throw error;
         }
     }
+    async getTournamentStats(tournamentId) {
+        if (!Number.isInteger(tournamentId) || tournamentId < 1) {
+            throw new common_1.BadRequestException('Invalid tournamentId');
+        }
+        const [tournament] = await this.db
+            .select({
+            id: schema_1.tournaments.id,
+            name: schema_1.tournaments.name,
+            status: schema_1.tournaments.status,
+        })
+            .from(schema_1.tournaments)
+            .where((0, drizzle_orm_1.eq)(schema_1.tournaments.id, tournamentId))
+            .limit(1);
+        if (!tournament) {
+            throw new common_1.NotFoundException('Tournament not found');
+        }
+        const participants = await this.db
+            .select({
+            userId: schema_1.tournamentParticipants.userId,
+        })
+            .from(schema_1.tournamentParticipants)
+            .where((0, drizzle_orm_1.eq)(schema_1.tournamentParticipants.tournamentId, tournamentId));
+        const tournamentMatches = await this.db
+            .select({
+            id: schema_1.matches.id,
+            status: schema_1.matches.status,
+            result: schema_1.matches.result,
+        })
+            .from(schema_1.matches)
+            .where((0, drizzle_orm_1.eq)(schema_1.matches.tournamentId, tournamentId));
+        return {
+            tournament,
+            stats: {
+                totalParticipants: participants.length,
+                totalMatches: tournamentMatches.length,
+                ongoingMatches: tournamentMatches.filter((match) => match.status === 'ongoing').length,
+                completedMatches: tournamentMatches.filter((match) => match.status === 'completed').length,
+            },
+        };
+    }
+    async update(tournamentId, coachId, dto) {
+        const [tournament] = await this.db
+            .select()
+            .from(schema_1.tournaments)
+            .where((0, drizzle_orm_1.eq)(schema_1.tournaments.id, tournamentId))
+            .limit(1);
+        if (!tournament) {
+            throw new common_1.NotFoundException('Tournament not found');
+        }
+        if (tournament.createdBy !== coachId) {
+            throw new common_1.ForbiddenException('You can only update your own tournaments');
+        }
+        if (tournament.status === 'completed') {
+            throw new common_1.BadRequestException('Completed tournaments cannot be updated');
+        }
+        const [updated] = await this.db
+            .update(schema_1.tournaments)
+            .set({
+            ...(dto.name !== undefined && { name: dto.name }),
+            ...(dto.timeControl !== undefined && {
+                timeControl: dto.timeControl,
+            }),
+            ...(dto.startAt !== undefined && {
+                startAt: new Date(dto.startAt),
+            }),
+        })
+            .where((0, drizzle_orm_1.eq)(schema_1.tournaments.id, tournamentId))
+            .returning();
+        return updated;
+    }
+    async remove(tournamentId, coachId) {
+        const [tournament] = await this.db
+            .select()
+            .from(schema_1.tournaments)
+            .where((0, drizzle_orm_1.eq)(schema_1.tournaments.id, tournamentId))
+            .limit(1);
+        if (!tournament) {
+            throw new common_1.NotFoundException('Tournament not found');
+        }
+        if (tournament.createdBy !== coachId) {
+            throw new common_1.ForbiddenException('You can only delete your own tournaments');
+        }
+        if (tournament.status === 'ongoing') {
+            throw new common_1.BadRequestException('Ongoing tournaments cannot be deleted');
+        }
+        await this.db.delete(schema_1.tournaments).where((0, drizzle_orm_1.eq)(schema_1.tournaments.id, tournamentId));
+        return { id: tournamentId };
+    }
 };
 exports.TournamentsService = TournamentsService;
 exports.TournamentsService = TournamentsService = __decorate([

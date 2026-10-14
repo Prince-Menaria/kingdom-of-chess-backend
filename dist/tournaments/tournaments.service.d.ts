@@ -1,4 +1,5 @@
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { UpdateTournamentDto } from './dto/update-tournament.dto';
 export declare class TournamentsService {
     private readonly db;
     constructor(db: any);
@@ -11,5 +12,18 @@ export declare class TournamentsService {
         participantId: any;
         userId: number;
         joinedAt: any;
+    }>;
+    getTournamentStats(tournamentId: number): Promise<{
+        tournament: any;
+        stats: {
+            totalParticipants: any;
+            totalMatches: any;
+            ongoingMatches: any;
+            completedMatches: any;
+        };
+    }>;
+    update(tournamentId: number, coachId: number, dto: UpdateTournamentDto): Promise<any>;
+    remove(tournamentId: number, coachId: number): Promise<{
+        id: number;
     }>;
 }

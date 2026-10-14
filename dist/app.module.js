@@ -9,13 +9,20 @@ var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = exports.ObserveInstrument = exports.ObserveModule = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
 const observe_1 = require("@nestjs/observe");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
-const config_1 = require("@nestjs/config");
+const auth_module_1 = require("./auth/auth.module");
 const database_module_1 = require("./db/database.module");
 const health_controller_1 = require("./health.controller");
-const auth_module_1 = require("./auth/auth.module");
+const leaderboard_controller_1 = require("./leaderboard/leaderboard.controller");
+const leaderboard_module_1 = require("./leaderboard/leaderboard.module");
+const leaderboard_service_1 = require("./leaderboard/leaderboard.service");
+const matches_module_1 = require("./matches/matches.module");
+const matchmaking_controller_1 = require("./matchmaking/matchmaking.controller");
+const matchmaking_module_1 = require("./matchmaking/matchmaking.module");
+const matchmaking_service_1 = require("./matchmaking/matchmaking.service");
 const tournaments_module_1 = require("./tournaments/tournaments.module");
 _a = (0, observe_1.createObserveModule)(), exports.ObserveModule = _a.ObserveModule, exports.ObserveInstrument = _a.ObserveInstrument;
 let AppModule = class AppModule {
@@ -30,9 +37,12 @@ exports.AppModule = AppModule = __decorate([
             database_module_1.DatabaseModule,
             auth_module_1.AuthModule,
             tournaments_module_1.TournamentsModule,
+            matchmaking_module_1.MatchmakingModule,
+            matches_module_1.MatchesModule,
+            leaderboard_module_1.LeaderboardModule,
         ],
-        controllers: [app_controller_1.AppController, health_controller_1.HealthController],
-        providers: [app_service_1.AppService],
+        controllers: [app_controller_1.AppController, health_controller_1.HealthController, matchmaking_controller_1.MatchmakingController, leaderboard_controller_1.LeaderboardController],
+        providers: [app_service_1.AppService, matchmaking_service_1.MatchmakingService, leaderboard_service_1.LeaderboardService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

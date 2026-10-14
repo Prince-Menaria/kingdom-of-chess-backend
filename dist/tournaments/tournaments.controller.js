@@ -21,6 +21,7 @@ const create_tournament_dto_1 = require("./dto/create-tournament.dto");
 const update_tournament_status_dto_1 = require("./dto/update-tournament-status.dto");
 const tournaments_service_1 = require("./tournaments.service");
 const swagger_1 = require("@nestjs/swagger");
+const update_tournament_dto_1 = require("./dto/update-tournament.dto");
 let TournamentsController = class TournamentsController {
     service;
     constructor(service) {
@@ -56,6 +57,26 @@ let TournamentsController = class TournamentsController {
             success: true,
             message: 'Tournament joined successfully',
             data: participant,
+        };
+    }
+    async getTournamentStats(id) {
+        return {
+            success: true,
+            data: await this.service.getTournamentStats(id),
+        };
+    }
+    async updateTournament(id, dto, req) {
+        const data = await this.service.update(id, req.user.sub, dto);
+        return {
+            success: true,
+            data,
+        };
+    }
+    async deleteTournament(id, req) {
+        await this.service.remove(id, req.user.sub);
+        return {
+            success: true,
+            message: 'Tournament deleted successfully',
         };
     }
 };
@@ -105,6 +126,34 @@ __decorate([
     __metadata("design:paramtypes", [Number, Object]),
     __metadata("design:returntype", Promise)
 ], TournamentsController.prototype, "joinTournament", null);
+__decorate([
+    (0, common_1.Get)(':id/stats'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Promise)
+], TournamentsController.prototype, "getTournamentStats", null);
+__decorate([
+    (0, common_1.Patch)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('coach'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, update_tournament_dto_1.UpdateTournamentDto, Object]),
+    __metadata("design:returntype", Promise)
+], TournamentsController.prototype, "updateTournament", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('coach'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __param(1, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], TournamentsController.prototype, "deleteTournament", null);
 exports.TournamentsController = TournamentsController = __decorate([
     (0, common_1.Controller)('api/v1/tournaments'),
     __metadata("design:paramtypes", [tournaments_service_1.TournamentsService])

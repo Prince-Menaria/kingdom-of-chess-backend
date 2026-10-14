@@ -4,12 +4,14 @@ import {
   BadRequestException,
   ConflictException,
   Inject,
+  ForbiddenException,
 } from '@nestjs/common';
 
 import { eq, desc, and } from 'drizzle-orm';
 import { DATABASE } from '../db/database.module';
-import { tournaments, tournamentParticipants } from '../db/schema';
+import { tournaments, tournamentParticipants, matches } from '../db/schema';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
+import { UpdateTournamentDto } from './dto/update-tournament.dto';
 
 @Injectable()
 export class TournamentsService {
@@ -125,5 +127,119 @@ export class TournamentsService {
 
       throw error;
     }
+  }
+
+  async getTournamentStats(tournamentId: number) {
+    if (!Number.isInteger(tournamentId) || tournamentId < 1) {
+      throw new BadRequestException('Invalid tournamentId');
+    }
+
+    const [tournament] = await this.db
+      .select({
+        id: tournaments.id,
+        name: tournaments.name,
+        status: tournaments.status,
+      })
+      .from(tournaments)
+      .where(eq(tournaments.id, tournamentId))
+      .limit(1);
+
+    if (!tournament) {
+      throw new NotFoundException('Tournament not found');
+    }
+
+    const participants = await this.db
+      .select({
+        userId: tournamentParticipants.userId,
+      })
+      .from(tournamentParticipants)
+      .where(eq(tournamentParticipants.tournamentId, tournamentId));
+
+    const tournamentMatches = await this.db
+      .select({
+        id: matches.id,
+        status: matches.status,
+        result: matches.result,
+      })
+      .from(matches)
+      .where(eq(matches.tournamentId, tournamentId));
+
+    return {
+      tournament,
+      stats: {
+        totalParticipants: participants.length,
+        totalMatches: tournamentMatches.length,
+        ongoingMatches: tournamentMatches.filter(
+          (match: { status: string }) => match.status === 'ongoing',
+        ).length,
+        completedMatches: tournamentMatches.filter(
+          (match: { status: string }) => match.status === 'completed',
+        ).length,
+      },
+    };
+  }
+
+  async update(
+    tournamentId: number,
+    coachId: number,
+    dto: UpdateTournamentDto,
+  ) {
+    const [tournament] = await this.db
+      .select()
+      .from(tournaments)
+      .where(eq(tournaments.id, tournamentId))
+      .limit(1);
+
+    if (!tournament) {
+      throw new NotFoundException('Tournament not found');
+    }
+
+    if (tournament.createdBy !== coachId) {
+      throw new ForbiddenException('You can only update your own tournaments');
+    }
+
+    if (tournament.status === 'completed') {
+      throw new BadRequestException('Completed tournaments cannot be updated');
+    }
+
+    const [updated] = await this.db
+      .update(tournaments)
+      .set({
+        ...(dto.name !== undefined && { name: dto.name }),
+        ...(dto.timeControl !== undefined && {
+          timeControl: dto.timeControl,
+        }),
+        ...(dto.startAt !== undefined && {
+          startAt: new Date(dto.startAt),
+        }),
+      })
+      .where(eq(tournaments.id, tournamentId))
+      .returning();
+
+    return updated;
+  }
+
+  async remove(tournamentId: number, coachId: number) {
+    const [tournament] = await this.db
+      .select()
+      .from(tournaments)
+      .where(eq(tournaments.id, tournamentId))
+      .limit(1);
+
+    if (!tournament) {
+      throw new NotFoundException('Tournament not found');
+    }
+
+    if (tournament.createdBy !== coachId) {
+      throw new ForbiddenException('You can only delete your own tournaments');
+    }
+
+    if (tournament.status === 'ongoing') {
+      throw new BadRequestException('Ongoing tournaments cannot be deleted');
+    }
+
+    await this.db.delete(tournaments).where(eq(tournaments.id, tournamentId));
+
+    return { id: tournamentId };
   }
 }

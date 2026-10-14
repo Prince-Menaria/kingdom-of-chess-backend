@@ -92,6 +92,13 @@ export const matchResultEnum = pgEnum('match_result', [
 export const matches = pgTable('matches', {
   id: serial('id').primaryKey(),
 
+  drawOfferedBy: integer('draw_offered_by'),
+
+  whiteTimeMs: integer('white_time_ms').notNull().default(300000),
+  blackTimeMs: integer('black_time_ms').notNull().default(300000),
+  turnStartedAt: timestamp('turn_started_at'),
+  
+
   tournamentId: integer('tournament_id')
     .notNull()
     .references(() => tournaments.id, { onDelete: 'cascade' }),

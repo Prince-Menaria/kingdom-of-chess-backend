@@ -1,0 +1,1 @@
+ALTER TABLE "matches" ADD COLUMN "draw_offered_by" integer;

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -18,6 +19,7 @@ import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentStatusDto } from './dto/update-tournament-status.dto';
 import { TournamentsService } from './tournaments.service';
 import { ApiCookieAuth } from '@nestjs/swagger';
+import { UpdateTournamentDto } from './dto/update-tournament.dto';
 
 type AuthRequest = Request & {
   user: { sub: number; email: string; role: 'coach' | 'student' };
@@ -83,4 +85,49 @@ export class TournamentsController {
       data: participant,
     };
   }
+
+  @Get(':id/stats')
+  async getTournamentStats(@Param('id', ParseIntPipe) id: number) {
+    return {
+      success: true,
+      data: await this.service.getTournamentStats(id),
+    };
+  }
+
+  
+@Patch(':id')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('coach')
+async updateTournament(
+  @Param('id', ParseIntPipe) id: number,
+  @Body() dto: UpdateTournamentDto,
+  @Req() req: any,
+) {
+  const data = await this.service.update(
+    id,
+    req.user.sub,
+    dto,
+  );
+
+  return {
+    success: true,
+    data,
+  };
+}
+
+@Delete(':id')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('coach')
+async deleteTournament(
+  @Param('id', ParseIntPipe) id: number,
+  @Req() req: any,
+) {
+  await this.service.remove(id, req.user.sub);
+
+  return {
+    success: true,
+    message: 'Tournament deleted successfully',
+  };
+}
+
 }
