@@ -7,6 +7,7 @@ const core_1 = require("@nestjs/core");
 const app_module_1 = require("./app.module");
 const common_1 = require("@nestjs/common");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const swagger_1 = require("@nestjs/swagger");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule, {
         instrument: app_module_1.ObserveInstrument,
@@ -21,6 +22,18 @@ async function bootstrap() {
         forbidNonWhitelisted: true,
         transform: true,
     }));
+    const swaggerConfig = new swagger_1.DocumentBuilder()
+        .setTitle('Kingdom of Chess API')
+        .setDescription('Kingdom of Chess backend API with JWT authentication using an HttpOnly cookie.')
+        .setVersion('1.0')
+        .addCookieAuth('access_token', {
+        type: 'apiKey',
+        in: 'cookie',
+        description: 'JWT stored in the HttpOnly access_token cookie',
+    })
+        .build();
+    const swaggerDocument = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
+    swagger_1.SwaggerModule.setup('api/docs', app, swaggerDocument);
     await app.listen(process.env.PORT ?? 3001);
 }
 bootstrap();

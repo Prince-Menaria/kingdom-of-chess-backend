@@ -2,19 +2,23 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule, ObserveInstrument } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
   });
 
+  // CORS configuration for frontend
   app.enableCors({
     origin: 'http://localhost:3000',
     credentials: true,
   });
 
+  // Parse cookies from incoming requests
   app.use(cookieParser());
 
+  // Validate incoming DTOs
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -23,6 +27,28 @@ async function bootstrap() {
     }),
   );
 
+  // Swagger configuration
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Kingdom of Chess API')
+    .setDescription(
+      'Kingdom of Chess backend API with JWT authentication using an HttpOnly cookie.',
+    )
+    .setVersion('1.0')
+    .addCookieAuth('access_token', {
+      type: 'apiKey',
+      in: 'cookie',
+      description: 'JWT stored in the HttpOnly access_token cookie',
+    })
+    .build();
+
+  const swaggerDocument = SwaggerModule.createDocument(
+    app,
+    swaggerConfig,
+  );
+
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
+
+  // Start server
   await app.listen(process.env.PORT ?? 3001);
 }
 

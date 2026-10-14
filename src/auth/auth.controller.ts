@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ApiCookieAuth } from '@nestjs/swagger';
 
 
 type AuthenticatedRequest = Request & {
@@ -66,6 +67,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+  @ApiCookieAuth('access_token')
   async me(@Req() request: AuthenticatedRequest) {
     return {
       success: true,

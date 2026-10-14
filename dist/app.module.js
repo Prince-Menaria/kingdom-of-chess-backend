@@ -16,6 +16,7 @@ const config_1 = require("@nestjs/config");
 const database_module_1 = require("./db/database.module");
 const health_controller_1 = require("./health.controller");
 const auth_module_1 = require("./auth/auth.module");
+const tournaments_module_1 = require("./tournaments/tournaments.module");
 _a = (0, observe_1.createObserveModule)(), exports.ObserveModule = _a.ObserveModule, exports.ObserveInstrument = _a.ObserveInstrument;
 let AppModule = class AppModule {
 };
@@ -28,6 +29,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             database_module_1.DatabaseModule,
             auth_module_1.AuthModule,
+            tournaments_module_1.TournamentsModule,
         ],
         controllers: [app_controller_1.AppController, health_controller_1.HealthController],
         providers: [app_service_1.AppService],

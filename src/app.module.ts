@@ -6,6 +6,7 @@ import { ConfigModule } from "@nestjs/config";
 import { DatabaseModule } from "./db/database.module";
 import { HealthController } from './health.controller';
 import { AuthModule } from './auth/auth.module';
+import { TournamentsModule } from './tournaments/tournaments.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -23,6 +24,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     }),
     DatabaseModule,
     AuthModule,
+    TournamentsModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
