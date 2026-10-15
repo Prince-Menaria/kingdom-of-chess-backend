@@ -44,6 +44,8 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const pg_1 = require("pg");
 const node_postgres_1 = require("drizzle-orm/node-postgres");
+const node_fs_1 = require("node:fs");
+const node_path_1 = require("node:path");
 const schema = __importStar(require("./schema"));
 exports.DATABASE = "DATABASE";
 let DatabaseModule = class DatabaseModule {
@@ -61,7 +63,14 @@ exports.DatabaseModule = DatabaseModule = __decorate([
                     if (!connectionString) {
                         throw new Error("DATABASE_URL is not configured");
                     }
-                    const pool = new pg_1.Pool({ connectionString });
+                    const ca = (0, node_fs_1.readFileSync)((0, node_path_1.join)(process.cwd(), "certs", "ca.pem"), "utf8");
+                    const pool = new pg_1.Pool({
+                        connectionString,
+                        ssl: {
+                            ca,
+                            rejectUnauthorized: true,
+                        },
+                    });
                     return (0, node_postgres_1.drizzle)({
                         client: pool,
                         schema,

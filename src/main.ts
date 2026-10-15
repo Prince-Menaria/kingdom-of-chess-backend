@@ -1,3 +1,4 @@
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule, ObserveInstrument } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
@@ -9,13 +10,13 @@ async function bootstrap() {
     instrument: ObserveInstrument,
   });
 
-  // CORS configuration for frontend
+  // CORS configuration
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
   });
 
-  // Parse cookies from incoming requests
+  // Parse cookies
   app.use(cookieParser());
 
   // Validate incoming DTOs
@@ -49,7 +50,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, swaggerDocument);
 
   // Start server
-  await app.listen(process.env.PORT ?? 3001);
+  const port = process.env.PORT || 3001;
+  await app.listen(port, '0.0.0.0');
 }
 
 bootstrap();

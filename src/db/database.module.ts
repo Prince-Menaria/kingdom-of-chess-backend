@@ -1,8 +1,9 @@
-
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import * as schema from "./schema";
 
 export const DATABASE = "DATABASE";
@@ -14,17 +15,29 @@ export const DATABASE = "DATABASE";
       provide: DATABASE,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const connectionString = config.get<string>("DATABASE_URL");
+        const connectionString =
+          config.get<string>("DATABASE_URL");
 
         if (!connectionString) {
           throw new Error("DATABASE_URL is not configured");
         }
 
-        const pool = new Pool({ connectionString });
+        const ca = readFileSync(
+          join(process.cwd(), "certs", "ca.pem"),
+          "utf8",
+        );
 
-        return drizzle({ 
-            client: pool,
-            schema, 
+        const pool = new Pool({
+          connectionString,
+          ssl: {
+            ca,
+            rejectUnauthorized: true,
+          },
+        });
+
+        return drizzle({
+          client: pool,
+          schema,
         });
       },
     },
