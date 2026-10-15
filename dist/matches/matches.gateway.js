@@ -149,7 +149,7 @@ __decorate([
 exports.MatchesGateway = MatchesGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
         cors: {
-            origin: 'http://localhost:3000',
+            origin: 'https://kingdom-chess-project.netlify.app/',
             credentials: true,
         },
     }),

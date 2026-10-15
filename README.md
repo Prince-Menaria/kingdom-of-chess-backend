@@ -103,7 +103,7 @@ NODE_ENV=development
 - `JWT_SECRET` — secret used to sign and verify JWTs. The application fails to initialize authentication if this is missing.
 - `NODE_ENV` — controls whether the auth cookie uses the `Secure` flag (`production` enables it).
 
-The API's current CORS configuration allows `http://localhost:3000` and credentials. If your frontend runs on another origin, update the backend CORS and Socket.IO CORS configuration accordingly.
+The API's current CORS configuration allows `https://kingdom-chess-project.netlify.app/` and credentials. If your frontend runs on another origin, update the backend CORS and Socket.IO CORS configuration accordingly.
 
 ## Local setup
 
