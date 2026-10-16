@@ -13,7 +13,7 @@ async function bootstrap() {
         instrument: app_module_1.ObserveInstrument,
     });
     app.enableCors({
-        origin: 'https://kingdom-chess-project.netlify.app/',
+        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
         credentials: true,
     });
     app.use((0, cookie_parser_1.default)());
@@ -34,7 +34,8 @@ async function bootstrap() {
         .build();
     const swaggerDocument = swagger_1.SwaggerModule.createDocument(app, swaggerConfig);
     swagger_1.SwaggerModule.setup('api/docs', app, swaggerDocument);
-    await app.listen(process.env.PORT ?? 3001);
+    const port = process.env.PORT || 3001;
+    await app.listen(port, '0.0.0.0');
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

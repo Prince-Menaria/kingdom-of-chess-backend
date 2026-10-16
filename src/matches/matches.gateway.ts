@@ -24,7 +24,7 @@ type AuthenticatedSocket = Socket & {
 
 @WebSocketGateway({
   cors: {
-    origin: 'https://kingdom-chess-project.netlify.app/',
+    origin: 'http://localhost:3000',
     credentials: true,
   },
 })
